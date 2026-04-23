@@ -6,6 +6,16 @@ app.use(cors());
 app.use(express.json());
 
 app.post('/v1/messages', async (req, res) => {
+  const messages = [];
+  
+  // Convert Anthropic system field to OpenAI system message
+  if (req.body.system) {
+    messages.push({ role: 'system', content: req.body.system });
+  }
+  
+  // Add the rest of the messages
+  messages.push(...req.body.messages);
+
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -15,11 +25,11 @@ app.post('/v1/messages', async (req, res) => {
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       max_tokens: req.body.max_tokens,
-      messages: req.body.messages
+      messages: messages
     })
   });
+
   const data = await response.json();
-  // Convert OpenAI response format to Anthropic format
   res.json({
     content: [{ text: data.choices?.[0]?.message?.content || '' }]
   });
