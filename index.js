@@ -1,9 +1,15 @@
 const express = require('express');
-const cors = require('cors');
 const app = express();
 
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+
+app.use(express.raw({ type: 'application/json', limit: '10mb' }));
 
 app.post('/v1/messages', async (req, res) => {
   try {
@@ -14,7 +20,7 @@ app.post('/v1/messages', async (req, res) => {
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify(req.body)
+      body: req.body
     });
     const data = await response.json();
     res.json(data);
