@@ -9,7 +9,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.raw({ type: 'application/json', limit: '10mb' }));
+app.use(express.json({ limit: '10mb' }));
 
 app.post('/v1/messages', async (req, res) => {
   try {
@@ -20,12 +20,11 @@ app.post('/v1/messages', async (req, res) => {
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: req.body
+      body: JSON.stringify(req.body)
     });
     const data = await response.json();
     res.json(data);
   } catch (err) {
-    console.error('Proxy error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
