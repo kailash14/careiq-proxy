@@ -2,18 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-app.use(cors()); 
+app.use(cors());
 app.use(express.json());
 
 app.post('/v1/messages', async (req, res) => {
   const messages = [];
-  
-  // Convert Anthropic system field to OpenAI system message
   if (req.body.system) {
     messages.push({ role: 'system', content: req.body.system });
   }
-  
-  // Add the rest of the messages
   messages.push(...req.body.messages);
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -30,6 +26,7 @@ app.post('/v1/messages', async (req, res) => {
   });
 
   const data = await response.json();
+  console.log('OpenAI raw:', JSON.stringify(data));
   res.json({
     content: [{ text: data.choices?.[0]?.message?.content || '' }]
   });
